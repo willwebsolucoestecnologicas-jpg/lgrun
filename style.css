@@ -1,0 +1,75 @@
+:root {
+    --strava-orange: #fc4c02;
+    --dark-bg: #1a1a1a;
+    --light-bg: #f8f9fa;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--light-bg);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    background: var(--white);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+header { text-align: center; margin-bottom: 30px; }
+.strava-logo { width: 140px; }
+
+.actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+
+.btn-primary {
+    background: var(--strava-orange);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #eee;
+    color: #333;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; color: #666; }
+td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; }
+
+.col-pos { font-weight: bold; color: var(--strava-orange); }
+.col-km { text-align: right; font-weight: bold; }
+
+.sponsors { margin-top: 40px; text-align: center; }
+.sponsor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+.sponsor-card {
+    background: #fdfdfd;
+    border: 1px dashed #ccc;
+    padding: 15px 5px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.hidden { display: none; }
+.spinner {
+    width: 30px; height: 30px; border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--strava-orange);
+    border-radius: 50%; animation: spin 1s linear infinite; margin: 10px auto;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

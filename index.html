@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Fitness | WillWeb Luís Gomes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="logo.jpg" alt="Strava" class="strava-logo">
+            <h1>🏆 LG Run</h1>
+            <p>O maior desafio fitness de Luís Gomes/RN</p>
+        </header>
+
+        <section class="actions">
+            <button id="btn-participar" class="btn-primary">🚀 Participar do Desafio</button>
+            <button id="btn-sync" class="btn-secondary">🔄 Sincronizar Ranking</button>
+        </section>
+
+        <div id="loader" class="hidden">
+            <div class="spinner"></div>
+            <p>Processando dados...</p>
+        </div>
+
+        <main>
+            <table id="ranking-table">
+                <thead>
+                    <tr>
+                        <th class="col-pos">#</th>
+                        <th>Atleta</th>
+                        <th class="col-km">Total KM</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-body">
+                    </tbody>
+            </table>
+        </main>
+
+        <section class="sponsors">
+            <h3>Nossos Patrocinadores</h3>
+            <div class="sponsor-grid">
+                <div class="sponsor-card">Açaí da Cidade</div>
+                <div class="sponsor-card">Academia Fit</div>
+                <div class="sponsor-card">Sua Marca Aqui</div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
