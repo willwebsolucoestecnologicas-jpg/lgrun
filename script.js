@@ -260,25 +260,40 @@ function exibirDesafio(desafio) {
     titulo.innerText = desafio.titulo;
     info.innerText = `Meta: ${desafio.kmAlvo}km | Categoria: ${desafio.tipo === 'run' ? '🏃 Corrida' : '🚴 Bike'}`;
 
-    // Inicia o Cronômetro
-    const dataFim = new Date(desafio.fim).getTime();
+    // Usamos os milissegundos diretos que vieram do Google
+    const tempoInicio = desafio.inicioMs;
+    const tempoFim = desafio.fimMs;
     
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
         const agora = new Date().getTime();
-        const distancia = dataFim - agora;
+        
+        // CENÁRIO: O desafio ainda NÃO começou
+        if (agora < tempoInicio) {
+            const dist = tempoInicio - agora;
+            const h = Math.floor(dist / (1000 * 60 * 60));
+            const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((dist % (1000 * 60)) / 1000);
+            
+            timer.innerHTML = `<span style="opacity:0.8; font-size: 0.8rem;">⏳ COMEÇA EM:</span><br>${h}h ${m}m ${s}s`;
+            document.querySelector('.challenge-badge').innerText = "🔜 EM BREVE";
+            document.querySelector('.challenge-card').style.background = "linear-gradient(135deg, #444 0%, #222 100%)";
+        } 
+        // CENÁRIO: O desafio ESTÁ acontecendo
+        else if (agora >= tempoInicio && agora <= tempoFim) {
+            const dist = tempoFim - agora;
+            const h = Math.floor(dist / (1000 * 60 * 60));
+            const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((dist % (1000 * 60)) / 1000);
 
-        if (distancia < 0) {
+            timer.innerHTML = `<span style="opacity:0.8; font-size: 0.8rem;">🏁 TERMINA EM:</span><br>${h}h ${m}m ${s}s`;
+            document.querySelector('.challenge-badge').innerText = "🔥 DESAFIO ATIVO";
+            document.querySelector('.challenge-card').style.background = "linear-gradient(135deg, #fc4c02 0%, #ff8c00 100%)";
+        }
+        else {
             clearInterval(timerInterval);
             container.classList.add('hidden');
-            return;
         }
-
-        const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
-        const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
-
-        timer.innerText = `Termina em: ${horas}h ${minutos}m ${segundos}s`;
     }, 1000);
 }
