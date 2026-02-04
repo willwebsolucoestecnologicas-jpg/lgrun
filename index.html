@@ -9,14 +9,27 @@
 <body>
     <div class="container">
         <header>
-            <img src="logo.jpg" alt="Strava" class="strava-logo">
+            <img src="logo.jpg" alt="Strava" class="strava-logo" onerror="this.style.display='none'">
             <h1>🏆 LG Run</h1>
             <p>O maior desafio fitness de Luís Gomes/RN</p>
         </header>
 
+        <div class="filters-container">
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-run" onclick="mudarCategoria('run')">🏃 Corrida</button>
+                <button class="tab-btn" id="tab-ride" onclick="mudarCategoria('ride')">🚴 Bike</button>
+                <button class="tab-btn" id="tab-geral" onclick="mudarCategoria('geral')">📊 Geral</button>
+            </div>
+            <div class="sub-filters">
+                <span class="chip active" id="chip-all" onclick="mudarSexo('all', this)">Todos</span>
+                <span class="chip" id="chip-m" onclick="mudarSexo('M', this)">Masculino</span>
+                <span class="chip" id="chip-f" onclick="mudarSexo('F', this)">Feminino</span>
+            </div>
+        </div>
+
         <section class="actions">
             <button id="btn-participar" class="btn-primary">🚀 Participar do Desafio</button>
-            <button id="btn-sync" class="btn-secondary">🔄 Sincronizar Ranking</button>
+            <button id="btn-sync" class="btn-secondary">🔄 Atualizar Ranking</button>
         </section>
 
         <div id="loader" class="hidden">
@@ -30,7 +43,7 @@
                     <tr>
                         <th class="col-pos">#</th>
                         <th>Atleta</th>
-                        <th class="col-km">Total KM</th>
+                        <th class="col-km" id="header-result">Distância</th>
                     </tr>
                 </thead>
                 <tbody id="ranking-body">
