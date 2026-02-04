@@ -120,20 +120,6 @@ async function sincronizarDados() {
     }
 }
 // D. Busca Desafios Ativos
-async function carregarDesafios() {
-    try {
-        const response = await fetch(`${API_URL}?action=getChallenges`);
-        const desafios = await response.json();
-        
-        if (desafios && desafios.length > 0) {
-            exibirDesafio(desafio = desafios[0]);
-        } else {
-            document.getElementById('challenge-container').classList.add('hidden');
-        }
-    } catch (error) {
-        console.error("Erro ao buscar desafios:", error);
-    }
-}
 
 // =================================================================
 // 🎨 FUNÇÕES DE INTERFACE (UI)
@@ -210,68 +196,129 @@ function renderizarTabela() {
     });
 }
 
-function exibirDesafio(desafio) {
-    const container = document.getElementById('challenge-container');
-    const titulo = document.getElementById('challenge-title');
-    const info = document.getElementById('challenge-info'); 
-    const timer = document.getElementById('challenge-timer');
-    const actionArea = document.getElementById('challenge-action');
-    const tagLive = document.querySelector('.tag-live'); 
+// Variável global para controlar os timers
+let globalTimerInterval;
 
-    container.classList.remove('hidden');
-    titulo.innerText = desafio.titulo;
-    info.innerText = `${desafio.kmAlvo} km`; 
-    
-    if (timerInterval) clearInterval(timerInterval);
-
-    timerInterval = setInterval(() => {
-        const agora = new Date().getTime();
-        // Garante que são números. Se vier texto, converte.
-        const inicio = Number(desafio.inicioMs);
-        const fim = Number(desafio.fimMs);
-
-        let distancia = 0;
+// 1. Busca e Renderiza TODOS os desafios
+async function carregarDesafios() {
+    try {
+        const response = await fetch(`${API_URL}?action=getChallenges`);
+        const desafios = await response.json();
         
-        if (agora < inicio) {
-            distancia = inicio - agora;
-            tagLive.innerText = "EM BREVE";
-            tagLive.style.background = "#0066ff"; 
-        } else if (agora >= inicio && agora <= fim) {
-            distancia = fim - agora;
-            tagLive.innerText = "AO VIVO";
-            tagLive.style.background = "#28a745"; 
+        const container = document.getElementById('challenge-container');
+        container.innerHTML = ''; // Limpa antes de adicionar
+
+        if (desafios && desafios.length > 0) {
+            container.classList.remove('hidden');
+            
+            // Cria um card para CADA desafio encontrado
+            desafios.forEach((desafio, index) => {
+                const cardHTML = criarHTMLCard(desafio, index);
+                container.innerHTML += cardHTML;
+            });
+
+            // Inicia o cronômetro que atualiza todos os cards
+            iniciarCronometroGlobal(desafios);
         } else {
-            clearInterval(timerInterval);
             container.classList.add('hidden');
-            return;
         }
+    } catch (error) {
+        console.error("Erro ao buscar desafios:", error);
+    }
+}
 
-        const t = calcularTempo(distancia);
-        timer.innerText = `${t.h}h ${t.m}m ${t.s}s`;
+// 2. Cria o HTML de um card individual (Layout Pro)
+function criarHTMLCard(desafio, index) {
+    const jaInscrito = localStorage.getItem(`desafio_${desafio.titulo}`);
+    
+    // Define o estado inicial do botão
+    let botaoHTML = '';
+    const msgZap = `Olá, quero participar do *${desafio.titulo}*!`;
+    const linkZap = `https://wa.me/5584996417551?text=${encodeURIComponent(msgZap)}`;
 
-        // Botão de Participar no WhatsApp
-        const dezMinutos = 10 * 60 * 1000;
-        const limiteInscricao = fim - dezMinutos;
-        const jaInscrito = localStorage.getItem(`desafio_${desafio.titulo}`);
+    if (jaInscrito) {
+        botaoHTML = `<div class="challenge-closed" style="border-color:#fff;">✅ INSCRITO</div>`;
+    } else {
+        // Adicionamos um ID único ao botão para sumir com ele depois
+        botaoHTML = `
+            <a href="${linkZap}" target="_blank" class="btn-challenge" 
+               id="btn-action-${index}"
+               onclick="confirmarParticipacao('${desafio.titulo}')">
+                🙋 QUERO PARTICIPAR
+            </a>
+        `;
+    }
 
-        if (agora < limiteInscricao) {
-            if (!jaInscrito) {
-                const msgZap = `Olá, quero participar do *${desafio.titulo}*!`;
-                // ⚠️ COLOQUE SEU NÚMERO ABAIXO (Mantenha o 55)
-                const linkZap = `https://wa.me/5584996417551?text=${encodeURIComponent(msgZap)}`;
-                
-                actionArea.innerHTML = `
-                    <a href="${linkZap}" target="_blank" class="btn-challenge" onclick="confirmarParticipacao('${desafio.titulo}')">
-                        🙋 QUERO PARTICIPAR
-                    </a>
-                `;
+    // IDs únicos para o timer e status deste card específico
+    return `
+        <div class="hero-card" id="card-${index}">
+            <div class="hero-glow"></div>
+            <div class="hero-header">
+                <span class="tag-live" id="status-${index}">CARREGANDO...</span>
+                <span class="hero-icon">${desafio.tipo === 'run' ? '🏃' : '🚴'}</span>
+            </div>
+            <h2>${desafio.titulo}</h2>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="label">Meta</span>
+                    <span class="value">${desafio.kmAlvo} km</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Tempo Restante</span>
+                    <span class="value timer" id="timer-${index}">--:--:--</span>
+                </div>
+            </div>
+            <div id="action-area-${index}">
+                ${botaoHTML}
+            </div>
+        </div>
+    `;
+}
+
+// 3. Controla o tempo de TODOS os desafios simultaneamente
+function iniciarCronometroGlobal(desafios) {
+    if (globalTimerInterval) clearInterval(globalTimerInterval);
+
+    globalTimerInterval = setInterval(() => {
+        const agora = new Date().getTime();
+
+        desafios.forEach((desafio, index) => {
+            const timerElement = document.getElementById(`timer-${index}`);
+            const statusElement = document.getElementById(`status-${index}`);
+            const actionArea = document.getElementById(`action-area-${index}`);
+            const cardElement = document.getElementById(`card-${index}`);
+
+            if (!timerElement) return; // Segurança
+
+            const inicio = Number(desafio.inicioMs);
+            const fim = Number(desafio.fimMs);
+            let distancia = 0;
+
+            // Lógica de Status
+            if (agora < inicio) {
+                distancia = inicio - agora;
+                statusElement.innerText = "EM BREVE";
+                statusElement.style.background = "#0066ff"; // Azul
+            } else if (agora >= inicio && agora <= fim) {
+                distancia = fim - agora;
+                statusElement.innerText = "AO VIVO";
+                statusElement.style.background = "#28a745"; // Verde
             } else {
-                actionArea.innerHTML = '<div class="challenge-closed" style="border-color:#fff; color:#fff;">✅ INSCRITO</div>';
+                // Se acabou, remove o card da tela
+                if (cardElement) cardElement.style.display = 'none';
+                return;
             }
-        } else {
-            actionArea.innerHTML = '<div class="challenge-closed">⛔ ENCERRADO</div>';
-        }
 
+            // Atualiza o relógio
+            const t = calcularTempo(distancia);
+            timerElement.innerText = `${t.h}h ${t.m}m ${t.s}s`;
+
+            // Lógica de Inscrição (10 min antes do fim)
+            const limiteInscricao = fim - (10 * 60 * 1000);
+            if (agora >= limiteInscricao && agora <= fim) {
+                actionArea.innerHTML = '<div class="challenge-closed">⛔ ENCERRADO</div>';
+            }
+        });
     }, 1000);
 }
 
@@ -339,4 +386,5 @@ function showToast(mensagem, tipo = 'success') {
         setTimeout(() => toast.remove(), 500); // Espera a animação acabar
     }, 4000);
 }
+
 
