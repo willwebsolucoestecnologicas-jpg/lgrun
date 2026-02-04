@@ -54,35 +54,36 @@ document.addEventListener('DOMContentLoaded', () => {
 // =================================================================
 
 // A. Processa o retorno do Login do Strava
+// A. Processa o retorno do Login do Strava (ATUALIZADA)
 async function processarRetornoStrava() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
     if (code) {
         mostrarLoader(true);
+        // Remove o código da URL na hora para ficar limpo
+        window.history.replaceState({}, document.title, window.location.pathname);
+
         try {
-            // Envia o código para o Google Apps Script
             const response = await fetch(`${API_URL}?code=${code}`);
             const result = await response.json();
             
             if (result.success) {
-                alert(`✅ Sucesso! Bem-vindo ao LG Sprint, ${result.atleta}!`);
-                // Limpa a URL para não tentar cadastrar de novo se der F5
-                window.history.replaceState({}, document.title, window.location.pathname);
-                carregarRanking(); // Atualiza a lista na hora
+                // USA A NOVA NOTIFICAÇÃO
+                showToast(`Bem-vindo, ${result.atleta}! Cadastro realizado.`, 'success');
+                carregarRanking();
             } else {
                 console.error("Erro Strava:", result);
-                alert("❌ Erro ao cadastrar: " + (result.error || "Tente novamente."));
+                showToast("Erro ao cadastrar. Tente novamente.", 'error');
             }
         } catch (error) {
             console.error("Erro de conexão:", error);
-            alert("Erro de conexão com o servidor. Verifique sua internet.");
+            showToast("Erro de conexão. Verifique sua internet.", 'error');
         } finally {
             mostrarLoader(false);
         }
     }
 }
-
 // B. Busca o Ranking
 async function carregarRanking() {
     mostrarLoader(true);
@@ -104,20 +105,20 @@ async function carregarRanking() {
 }
 
 // C. Sincronização Manual
+// C. Sincronização Manual (ATUALIZADA)
 async function sincronizarDados() {
     mostrarLoader(true);
     try {
         const res = await fetch(`${API_URL}?action=syncAll`);
         const result = await res.json();
-        alert(`🔄 Sincronização concluída! Novas atividades: ${result.novasAtividades}`);
+        showToast(`Sync concluído! +${result.novasAtividades} atividades.`, 'success');
         carregarRanking();
     } catch (e) {
-        alert("Erro ao sincronizar. Tente novamente.");
+        showToast("Erro ao sincronizar.", 'error');
     } finally {
         mostrarLoader(false);
     }
 }
-
 // D. Busca Desafios Ativos
 async function carregarDesafios() {
     try {
@@ -338,3 +339,4 @@ function showToast(mensagem, tipo = 'success') {
         setTimeout(() => toast.remove(), 500); // Espera a animação acabar
     }, 4000);
 }
+
