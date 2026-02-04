@@ -312,3 +312,29 @@ function toggleModal() {
     if (modal.classList.contains('hidden')) modal.classList.remove('hidden');
     else modal.classList.add('hidden');
 }
+
+// Função para mostrar notificação bonita
+function showToast(mensagem, tipo = 'success') {
+    const area = document.getElementById('notification-area');
+    
+    // Cria o elemento da notificação
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo}`;
+    
+    // Ícone baseado no tipo
+    const icon = tipo === 'success' ? '✅' : '❌';
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${icon}</span>
+        <span>${mensagem}</span>
+    `;
+    
+    // Adiciona na tela
+    area.appendChild(toast);
+    
+    // Remove automaticamente depois de 4 segundos
+    setTimeout(() => {
+        toast.style.animation = "toastFadeOut 0.5s forwards";
+        setTimeout(() => toast.remove(), 500); // Espera a animação acabar
+    }, 4000);
+}
