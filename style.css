@@ -278,3 +278,35 @@ footer { margin-top: 50px; text-align: center; border-top: var(--border); paddin
 @keyframes toastFadeOut {
     to { opacity: 0; transform: translateY(-20px); }
 }
+
+/* --- MULTI-DESAFIOS --- */
+.challenge-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Espaço entre os cards */
+    margin-bottom: 25px;
+    animation: slideUp 0.5s ease;
+}
+
+/* Ajustes no Card para funcionar em lista */
+.hero-card {
+    background: linear-gradient(135deg, var(--primary), #ff8c00);
+    border-radius: 24px;
+    padding: 20px; /* Um pouco menor para caber melhor */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 20px -5px rgba(252, 76, 2, 0.4);
+    transition: transform 0.2s;
+}
+
+.hero-card:hover {
+    transform: translateY(-2px); /* Efeito ao passar o mouse */
+}
+
+/* Título um pouco menor para economizar espaço */
+.hero-card h2 { 
+    font-size: 1.3rem; 
+    margin-bottom: 15px; 
+    color: #fff; 
+}
