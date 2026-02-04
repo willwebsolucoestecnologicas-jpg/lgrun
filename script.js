@@ -260,81 +260,85 @@ async function carregarDesafios() {
 function exibirDesafio(desafio) {
     const container = document.getElementById('challenge-container');
     const titulo = document.getElementById('challenge-title');
-    const info = document.getElementById('challenge-info');
+    const info = document.getElementById('challenge-info'); // Agora é o campo "Meta"
     const timer = document.getElementById('challenge-timer');
-    const badge = document.querySelector('.challenge-badge');
-    const card = document.querySelector('.challenge-card');
-    const actionArea = document.getElementById('challenge-action'); // Área do botão
+    const actionArea = document.getElementById('challenge-action');
+    const tagLive = document.querySelector('.tag-live'); // A etiqueta "AO VIVO"
 
+    // Exibe o container
     container.classList.remove('hidden');
+    
+    // 1. Preenche os dados básicos
     titulo.innerText = desafio.titulo;
-    info.innerText = `Meta: ${desafio.kmAlvo}km | Categoria: ${desafio.tipo === 'run' ? '🏃 Corrida' : '🚴 Bike'}`;
-
+    info.innerText = `${desafio.kmAlvo} km`; // Preenche apenas o número da meta
+    
+    // Limpa timer anterior para não sobrepor
     if (timerInterval) clearInterval(timerInterval);
 
+    // 2. Inicia o Loop do Cronômetro
     timerInterval = setInterval(() => {
         const agora = new Date().getTime();
+        const inicio = desafio.inicioMs; // Certifique-se que o Google envia isso
+        const fim = desafio.fimMs;
+
+        let distancia = 0;
         
-        // Lógica do Botão: Desaparece 10 minutos antes do fim
-        const dezMinutosEmMs = 10 * 60 * 1000;
-        const limiteInscricao = desafio.fimMs - dezMinutosEmMs;
-        const jaInscrito = localStorage.getItem(`desafio_${desafio.titulo}`); // Verifica se já clicou
-
-        // Renderiza o botão ou o aviso
-        if (agora < limiteInscricao) {
-            if (jaInscrito) {
-                actionArea.innerHTML = '<span class="challenge-closed" style="border-color:#fff; color:#fff;">✅ VOCÊ ESTÁ PARTICIPANDO</span>';
-            } else {
-                // Insira AQUI o seu número de WhatsApp para receber a inscrição
-                const msgZap = `Olá, quero confirmar minha participação no *${desafio.titulo}*!`;
-                const linkZap = `https://wa.me/5584996106961?text=${encodeURIComponent(msgZap)}`;
-                
-                actionArea.innerHTML = `
-                    <button class="btn-challenge" onclick="confirmarParticipacao('${desafio.titulo}', '${linkZap}')">
-                        🙋‍♂️ QUERO PARTICIPAR
-                    </button>
-                `;
-            }
-        } else if (agora >= limiteInscricao && agora <= desafio.fimMs) {
-            actionArea.innerHTML = '<div class="challenge-closed">⛔ INSCRIÇÕES ENCERRADAS</div>';
-        } else {
-            actionArea.innerHTML = ''; // Limpa se acabou
-        }
-
-        // --- LÓGICA DO TIMER (MANTIDA) ---
-        if (agora < desafio.inicioMs) {
-            const dist = desafio.inicioMs - agora;
-            const t = calcularTempo(dist);
-            badge.innerText = "🔜 EM BREVE";
-            badge.style.background = "rgba(255,255,255,0.2)";
-            card.style.background = "linear-gradient(135deg, #555 0%, #222 100%)";
-            timer.innerHTML = `<span style="font-size:0.8rem; opacity:0.8;">ABRE EM:</span><br>${t.h}h ${t.m}m ${t.s}s`;
+        // CENÁRIO A: Desafio ainda vai começar
+        if (agora < inicio) {
+            distancia = inicio - agora;
+            tagLive.innerText = "EM BREVE";
+            tagLive.style.background = "#f5a623"; // Laranja
+            tagLive.style.color = "#000";
         } 
-        else if (agora >= desafio.inicioMs && agora <= desafio.fimMs) {
-            const dist = desafio.fimMs - agora;
-            const t = calcularTempo(dist);
-            badge.innerText = "🔥 DESAFIO ATIVO";
-            badge.style.background = "rgba(0,0,0,0.2)";
-            card.style.background = "linear-gradient(135deg, #fc4c02 0%, #ff8c00 100%)";
-            timer.innerHTML = `<span style="font-size:0.8rem; opacity:0.8;">TERMINA EM:</span><br>${t.h}h ${t.m}m ${t.s}s`;
-        }
+        // CENÁRIO B: Desafio está rolando
+        else if (agora >= inicio && agora <= fim) {
+            distancia = fim - agora;
+            tagLive.innerText = "AO VIVO AGORA";
+            tagLive.style.background = "#0066ff"; // Azul Tech
+            tagLive.style.color = "#fff";
+        } 
+        // CENÁRIO C: Acabou
         else {
             clearInterval(timerInterval);
-            container.classList.add('hidden');
+            container.classList.add('hidden'); // Esconde o card se acabou
+            return;
         }
+
+        // 3. Formata e escreve o tempo na tela
+        const t = calcularTempo(distancia);
+        timer.innerText = `${t.h}h ${t.m}m ${t.s}s`;
+
+        // 4. Lógica do Botão (Aparece/Some)
+        const dezMinutos = 10 * 60 * 1000;
+        const limiteInscricao = fim - dezMinutos;
+        const jaInscrito = localStorage.getItem(`desafio_${desafio.titulo}`);
+
+        if (agora < limiteInscricao) {
+            if (!jaInscrito) {
+                const msgZap = `Olá, quero participar do *${desafio.titulo}*!`;
+                // IMPORTANTE: Troque pelo seu número real abaixo
+                const linkZap = `https://wa.me/5584999999999?text=${encodeURIComponent(msgZap)}`;
+                
+                actionArea.innerHTML = `
+                    <a href="${linkZap}" target="_blank" class="btn-challenge" onclick="confirmarParticipacao('${desafio.titulo}')">
+                        ⚡ QUERO PARTICIPAR
+                    </a>
+                `;
+            } else {
+                actionArea.innerHTML = '<div class="challenge-closed" style="border-color:#28a745; color:#28a745;">✅ VOCÊ JÁ ESTÁ DENTRO</div>';
+            }
+        } else {
+            actionArea.innerHTML = '<div class="challenge-closed">⛔ INSCRIÇÕES ENCERRADAS</div>';
+        }
+
     }, 1000);
 }
-
 // Nova função para salvar que a pessoa clicou (Simula inscrição)
-function confirmarParticipacao(tituloDesafio, linkWhatsApp) {
-    // Salva no navegador da pessoa que ela clicou
-    localStorage.setItem(`desafio_${tituloDesafio}`, 'true');
-    
-    // Redireciona para o WhatsApp do Admin (Você)
-    window.open(linkWhatsApp, '_blank');
-    
-    // Atualiza a tela na hora para sumir o botão
-    exibirDesafio(dadosCompletos.find(d => d.titulo === tituloDesafio) || {}); 
+// Função para salvar inscrição
+function confirmarParticipacao(titulo) {
+    localStorage.setItem(`desafio_${titulo}`, 'true');
+    // Recarrega parte da tela para atualizar botão
+    setTimeout(() => location.reload(), 1000);
 }
 
 function calcularTempo(ms) {
@@ -345,7 +349,7 @@ function calcularTempo(ms) {
     };
 }
 
-// Função auxiliar para não repetir código de cálculo
+// Função Auxiliar de Tempo
 function calcularTempo(ms) {
     return {
         h: Math.floor(ms / (1000 * 60 * 60)),
