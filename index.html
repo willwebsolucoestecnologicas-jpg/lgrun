@@ -2,96 +2,115 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking Fitness | WillWeb Luís Gomes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LG Sprint | Pro Edition</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+
     <meta property="og:title" content="LG Sprint | Ranking Oficial">
-<meta property="og:description" content="Acompanhe o ranking em tempo real do maior desafio fitness de Luís Gomes/RN.">
-<meta property="og:image" content="https://willwebsolucoestecnologicas-jpg.github.io/lgrun/logo.jpg">
-<meta property="og:url" content="https://willwebsolucoestecnologicas-jpg.github.io/lgrun/">
+    <meta property="og:description" content="Performance e Tecnologia. Acompanhe o ranking.">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <img src="logo.jpg" alt="Strava" class="strava-logo" onerror="this.style.display='none'">
-            <h1>🏆 LG Run</h1>
-            <p>O maior desafio fitness de Luís Gomes/RN</p>
-        </header>
 
-        <div class="filters-container">
-            <div class="tabs">
-                <button class="tab-btn active" id="tab-run" onclick="mudarCategoria('run')">🏃 Corrida</button>
-                <button class="tab-btn" id="tab-ride" onclick="mudarCategoria('ride')">🚴 Bike</button>
-                <button class="tab-btn" id="tab-geral" onclick="mudarCategoria('geral')">📊 Geral</button>
+    <div class="app-container">
+        
+        <nav class="navbar">
+            <div class="brand">
+                <span class="brand-icon">⚡</span>
+                <div class="brand-text">
+                    <h1>LG SPRINT</h1>
+                    <span class="pro-badge">PRO</span>
+                </div>
             </div>
-            <div class="sub-filters">
-                <span class="chip active" id="chip-all" onclick="mudarSexo('all', this)">Todos</span>
-                <span class="chip" id="chip-m" onclick="mudarSexo('M', this)">Masculino</span>
-                <span class="chip" id="chip-f" onclick="mudarSexo('F', this)">Feminino</span>
+            <div class="status-indicator">
+                <span class="dot online"></span> Live
             </div>
-        </div>
+        </nav>
 
-        <div id="challenge-container" class="hidden">
-    <div class="challenge-card">
-        <div class="challenge-badge">🔥 DESAFIO ATIVO</div>
-        <h3 id="challenge-title">Carregando desafio...</h3>
-        <p id="challenge-info">Meta: --km | Categoria: --</p>
-        <div class="challenge-timer" id="challenge-timer">Termina em: --:--:--</div>
-    </div>
-</div>
-
-        <section class="actions">
-            <button id="btn-participar" class="btn-primary">🚀 Participar do Desafio</button>
-            <button id="btn-sync" class="btn-secondary">🔄 Atualizar Ranking</button>
-        </section>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-    <a href="javascript:void(0)" onclick="toggleModal()" style="color: var(--strava-orange); font-size: 0.85rem; font-weight: bold; text-decoration: none;">
-        📑 Ver Regras do Desafio
-    </a>
-</div>
-
-<div id="modal-regras" class="modal hidden">
-    <div class="modal-content">
-        <span class="close-btn" onclick="toggleModal()">&times;</span>
-        <h2>📜 Regras do Desafio</h2>
-        <div class="regras-texto">
-            <p><strong>📍 Exclusividade:</strong> Exclusivo para moradores e atletas de <strong>Luís Gomes/RN</strong>. Atletas de outras cidades serão removidos.</p>
-            <p><strong>🛰️ Apenas GPS:</strong> Somente atividades registradas via GPS. Treinos manuais ou esteira/ergométrica não contam.</p>
-            <p><strong>🚲 Categorias:</strong> O sistema separa automaticamente Corrida de Ciclismo baseado no tipo de atividade salva no Strava.</p>
-            <p><strong>🏁 Fair Play:</strong> Atividades em veículos (carro/moto) detectadas pelo sistema causarão a exclusão do atleta.</p>
-        </div>
-        <button class="btn-primary" onclick="toggleModal()" style="margin-top: 20px; width: 100%;">Entendi!</button>
-    </div>
-</div>
-
-        <div id="loader" class="hidden">
-            <div class="spinner"></div>
-            <p>Processando dados...</p>
+        <div class="control-panel">
+            <div class="segmented-control">
+                <button class="seg-btn active" id="tab-run" onclick="mudarCategoria('run')">Run</button>
+                <button class="seg-btn" id="tab-ride" onclick="mudarCategoria('ride')">Bike</button>
+                <button class="seg-btn" id="tab-geral" onclick="mudarCategoria('geral')">Geral</button>
+            </div>
+            
+            <div class="filter-pills">
+                <button class="pill active" onclick="mudarSexo('all', this)">Todos</button>
+                <button class="pill" onclick="mudarSexo('M', this)">M</button>
+                <button class="pill" onclick="mudarSexo('F', this)">F</button>
+            </div>
         </div>
 
         <main>
-            <table id="ranking-table">
-                <thead>
-                    <tr>
-                        <th class="col-pos">#</th>
-                        <th>Atleta</th>
-                        <th class="col-km" id="header-result">Distância</th>
-                    </tr>
-                </thead>
-                <tbody id="ranking-body">
-                    </tbody>
-            </table>
+            <div id="challenge-container" class="hidden">
+                <div class="hero-card">
+                    <div class="hero-glow"></div>
+                    <div class="hero-content">
+                        <div class="hero-header">
+                            <span class="tag-live">AO VIVO AGORA</span>
+                            <span class="hero-icon">🏆</span>
+                        </div>
+                        <h2 id="challenge-title">Carregando...</h2>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="label">Meta</span>
+                                <span class="value" id="challenge-info">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Tempo Restante</span>
+                                <span class="value timer" id="challenge-timer">--:--:--</span>
+                            </div>
+                        </div>
+                        <div id="challenge-action" class="hero-footer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-actions">
+                <button id="btn-participar" class="btn-action primary">
+                    <span class="icon">🚀</span> Entrar no Desafio
+                </button>
+                <button id="btn-sync" class="btn-action glass">
+                    <span class="icon">↻</span> Sync
+                </button>
+            </div>
+
+            <div class="ranking-section">
+                <div class="section-header">
+                    <h3>Leaderboard</h3>
+                    <span class="header-result" id="header-result">Distância</span>
+                </div>
+                
+                <div class="ranking-list" id="ranking-body">
+                    </div>
+                
+                <div id="loader" class="hidden">
+                    <div class="loader-line"></div>
+                </div>
+            </div>
         </main>
 
-        <section class="sponsors">
-            <h3>Nossos Patrocinadores</h3>
-            <div class="sponsor-grid">
-                <div class="sponsor-card">Açaí da Cidade</div>
-                <div class="sponsor-card">Academia Fit</div>
-                <div class="sponsor-card">Sua Marca Aqui</div>
+        <footer>
+            <div class="partners">
+                <span>Powerfisio</span> • <span>Açaí da Cidade</span> • <span>G-Farma</span>
             </div>
-        </section>
+            <button class="link-btn" onclick="toggleModal()">Regulamento Oficial</button>
+        </footer>
+    </div>
+
+    <div id="modal-regras" class="modal hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Regulamento</h3>
+                <button class="close-icon" onclick="toggleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>📍 <strong>Localidade:</strong> Exclusivo Luís Gomes/RN</p>
+                <p>🛰️ <strong>Rastreio:</strong> Apenas GPS (Sem manuais)</p>
+                <p>⚠️ <strong>Anti-Fraude:</strong> Monitoramento ativo.</p>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
