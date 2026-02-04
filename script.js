@@ -190,9 +190,17 @@ async function sincronizarDados() {
 function mudarCategoria(novaCat) {
     categoriaAtual = novaCat;
     
-    // Atualiza classes dos botões
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`tab-${novaCat}`).classList.add('active');
+    // 1. Remove a classe 'active' de TODOS os botões da categoria
+    // (Note que agora usamos .seg-btn em vez de .tab-btn)
+    document.querySelectorAll('.seg-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // 2. Adiciona 'active' apenas no botão clicado
+    const btnAtivo = document.getElementById(`tab-${novaCat}`);
+    if (btnAtivo) {
+        btnAtivo.classList.add('active');
+    }
     
     renderizarTabela();
 }
@@ -200,13 +208,19 @@ function mudarCategoria(novaCat) {
 function mudarSexo(novoSexo, elemento) {
     sexoAtual = novoSexo;
     
-    // Atualiza classes dos chips
-    document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('active'));
-    elemento.classList.add('active');
+    // 1. Remove a classe 'active' de TODOS os botões de filtro
+    // (Note que agora usamos .pill em vez de .chip)
+    document.querySelectorAll('.pill').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // 2. Adiciona 'active' apenas no botão que você clicou
+    if (elemento) {
+        elemento.classList.add('active');
+    }
     
     renderizarTabela();
 }
-
 function mostrarLoader(show) {
     if (show) loader.classList.remove('hidden');
     else loader.classList.add('hidden');
@@ -339,3 +353,4 @@ function calcularTempo(ms) {
         s: Math.floor((ms % (1000 * 60)) / 1000)
     };
 }
+
