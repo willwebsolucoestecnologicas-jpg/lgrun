@@ -314,9 +314,10 @@ footer { margin-top: 50px; text-align: center; border-top: var(--border); paddin
 /* Adicione isso ao seu style.css */
 
 .brand-logo {
-    height: 45px; /* Ajuste a altura conforme necessário */
-    width: 45px;  /* Mantém a proporção */
+    height: 60px; /* Ajuste a altura conforme necessário */
+    width: 60px;  /* Mantém a proporção */
     border-radius: 50%;
     object-fit: cover;
     margin-right: 12px; /* Espaço entre o logo e o texto */
 }
+
