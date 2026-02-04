@@ -255,45 +255,51 @@ function exibirDesafio(desafio) {
     const titulo = document.getElementById('challenge-title');
     const info = document.getElementById('challenge-info');
     const timer = document.getElementById('challenge-timer');
+    const badge = document.querySelector('.challenge-badge');
+    const card = document.querySelector('.challenge-card');
 
     container.classList.remove('hidden');
     titulo.innerText = desafio.titulo;
     info.innerText = `Meta: ${desafio.kmAlvo}km | Categoria: ${desafio.tipo === 'run' ? '🏃 Corrida' : '🚴 Bike'}`;
 
-    // Usamos os milissegundos diretos que vieram do Google
-    const tempoInicio = desafio.inicioMs;
-    const tempoFim = desafio.fimMs;
-    
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
         const agora = new Date().getTime();
         
-        // CENÁRIO: O desafio ainda NÃO começou
-        if (agora < tempoInicio) {
-            const dist = tempoInicio - agora;
-            const h = Math.floor(dist / (1000 * 60 * 60));
-            const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((dist % (1000 * 60)) / 1000);
+        // CENÁRIO A: Ainda não começou
+        if (agora < desafio.inicioMs) {
+            const dist = desafio.inicioMs - agora;
+            const t = calcularTempo(dist);
             
-            timer.innerHTML = `<span style="opacity:0.8; font-size: 0.8rem;">⏳ COMEÇA EM:</span><br>${h}h ${m}m ${s}s`;
-            document.querySelector('.challenge-badge').innerText = "🔜 EM BREVE";
-            document.querySelector('.challenge-card').style.background = "linear-gradient(135deg, #444 0%, #222 100%)";
+            badge.innerText = "🔜 EM BREVE";
+            badge.style.background = "rgba(255,255,255,0.2)";
+            card.style.background = "linear-gradient(135deg, #555 0%, #222 100%)";
+            timer.innerHTML = `<span style="font-size:0.8rem; opacity:0.8;">COMEÇA EM:</span><br>${t.h}h ${t.m}m ${t.s}s`;
         } 
-        // CENÁRIO: O desafio ESTÁ acontecendo
-        else if (agora >= tempoInicio && agora <= tempoFim) {
-            const dist = tempoFim - agora;
-            const h = Math.floor(dist / (1000 * 60 * 60));
-            const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
-            const s = Math.floor((dist % (1000 * 60)) / 1000);
+        // CENÁRIO B: Está acontecendo
+        else if (agora >= desafio.inicioMs && agora <= desafio.fimMs) {
+            const dist = desafio.fimMs - agora;
+            const t = calcularTempo(dist);
 
-            timer.innerHTML = `<span style="opacity:0.8; font-size: 0.8rem;">🏁 TERMINA EM:</span><br>${h}h ${m}m ${s}s`;
-            document.querySelector('.challenge-badge').innerText = "🔥 DESAFIO ATIVO";
-            document.querySelector('.challenge-card').style.background = "linear-gradient(135deg, #fc4c02 0%, #ff8c00 100%)";
+            badge.innerText = "🔥 DESAFIO ATIVO";
+            badge.style.background = "rgba(0,0,0,0.2)";
+            card.style.background = "linear-gradient(135deg, #fc4c02 0%, #ff8c00 100%)";
+            timer.innerHTML = `<span style="font-size:0.8rem; opacity:0.8;">TERMINA EM:</span><br>${t.h}h ${t.m}m ${t.s}s`;
         }
+        // CENÁRIO C: Expirou
         else {
             clearInterval(timerInterval);
             container.classList.add('hidden');
         }
     }, 1000);
+}
+
+// Função auxiliar para não repetir código de cálculo
+function calcularTempo(ms) {
+    return {
+        h: Math.floor(ms / (1000 * 60 * 60)),
+        m: Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60)),
+        s: Math.floor((ms % (1000 * 60)) / 1000)
+    };
 }
