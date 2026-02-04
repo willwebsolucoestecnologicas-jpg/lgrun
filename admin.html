@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | LG Sprint</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-card { background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #ddd; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: #f0f0f0; padding: 15px; border-radius: 10px; text-align: center; }
+        .danger-zone { border: 1px dashed red; padding: 15px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚙️ Painel Admin</h1>
+            <p>Williano Costa - WillWeb Soluções</p>
+        </header>
+
+        <div id="login-area" class="admin-card">
+            <h3>Chave de Acesso</h3>
+            <input type="password" id="admin-key" placeholder="Digite sua senha admin..." style="width: 80%; padding: 10px; margin-bottom: 10px;">
+            <button onclick="verificarAcesso()" class="btn-primary">Entrar</button>
+        </div>
+
+        <div id="admin-content" class="hidden">
+            
+            <section class="admin-card">
+                <h3>🏆 Criar Novo Desafio</h3>
+                <div class="form-group">
+                    <label>Título do Desafio</label>
+                    <input type="text" id="desc-titulo" placeholder="Ex: Desafio 10km Farmácia">
+                </div>
+                <div class="stats-grid">
+                    <div class="form-group">
+                        <label>KM Alvo</label>
+                        <input type="number" id="desc-km" placeholder="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <select id="desc-tipo">
+                            <option value="run">Corrida</option>
+                            <option value="ride">Bike</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Data/Hora Início</label>
+                    <input type="datetime-local" id="desc-inicio">
+                </div>
+                <div class="form-group">
+                    <label>Data/Hora Término</label>
+                    <input type="datetime-local" id="desc-fim">
+                </div>
+                <button onclick="salvarDesafio()" class="btn-primary" style="background: green;">🚀 Lançar Desafio</button>
+            </section>
+
+            <section class="admin-card danger-zone">
+                <h3>⚠️ Gestão Global</h3>
+                <button onclick="forcarSincronizacao()" class="btn-secondary" style="width: 100%; margin-bottom: 10px;">🔄 Forçar Sync de Todos os Atletas</button>
+                <button onclick="limparCache()" class="btn-secondary" style="width: 100%;">🧹 Limpar Dados Temporários</button>
+            </section>
+
+            <button onclick="window.location.href='index.html'" class="btn-secondary">⬅️ Voltar ao Site Público</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbyrEhqu0mSebN0ot74wk1CHEMrSRjmTyTHjqsdx1a6Sk80sqfZ_M14SpjStRDCRFl_92w/exec";
+        
+        function verificarAcesso() {
+            const key = document.getElementById('admin-key').value;
+            // Aqui você pode definir uma senha simples
+            if(key === "LG2026") { 
+                document.getElementById('login-area').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+            } else {
+                alert("Chave incorreta!");
+            }
+        }
+
+        async function salvarDesafio() {
+            const dados = {
+                action: 'createChallenge',
+                titulo: document.getElementById('desc-titulo').value,
+                km: document.getElementById('desc-km').value,
+                tipo: document.getElementById('desc-tipo').value,
+                inicio: document.getElementById('desc-inicio').value,
+                fim: document.getElementById('desc-fim').value,
+                key: document.getElementById('admin-key').value
+            };
+
+            if(!dados.titulo || !dados.inicio) return alert("Preencha os campos!");
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necessário para Google Apps Script se não usar JSONP
+                    body: JSON.stringify(dados)
+                });
+                alert("Solicitação enviada! Verifique sua planilha.");
+            } catch (e) {
+                alert("Erro ao salvar.");
+            }
+        }
+
+        async function forcarSincronizacao() {
+            alert("Iniciando sincronização global. Isso pode levar alguns segundos...");
+            const res = await fetch(`${API_URL}?action=syncAll&key=${document.getElementById('admin-key').value}`);
+            const result = await res.json();
+            alert("Sincronização concluída!");
+        }
+    </script>
+</body>
+</html>
