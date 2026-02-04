@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranking Fitness | WillWeb Luís Gomes</title>
     <link rel="stylesheet" href="style.css">
+    <meta property="og:title" content="LG Sprint | Ranking Oficial">
+<meta property="og:description" content="Acompanhe o ranking em tempo real do maior desafio fitness de Luís Gomes/RN.">
+<meta property="og:image" content="https://willwebsolucoestecnologicas-jpg.github.io/lgrun/logo.jpg">
+<meta property="og:url" content="https://willwebsolucoestecnologicas-jpg.github.io/lgrun/">
 </head>
 <body>
     <div class="container">
@@ -27,10 +31,39 @@
             </div>
         </div>
 
+        <div id="challenge-container" class="hidden">
+    <div class="challenge-card">
+        <div class="challenge-badge">🔥 DESAFIO ATIVO</div>
+        <h3 id="challenge-title">Carregando desafio...</h3>
+        <p id="challenge-info">Meta: --km | Categoria: --</p>
+        <div class="challenge-timer" id="challenge-timer">Termina em: --:--:--</div>
+    </div>
+</div>
+
         <section class="actions">
             <button id="btn-participar" class="btn-primary">🚀 Participar do Desafio</button>
             <button id="btn-sync" class="btn-secondary">🔄 Atualizar Ranking</button>
         </section>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+    <a href="javascript:void(0)" onclick="toggleModal()" style="color: var(--strava-orange); font-size: 0.85rem; font-weight: bold; text-decoration: none;">
+        📑 Ver Regras do Desafio
+    </a>
+</div>
+
+<div id="modal-regras" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-btn" onclick="toggleModal()">&times;</span>
+        <h2>📜 Regras do Desafio</h2>
+        <div class="regras-texto">
+            <p><strong>📍 Exclusividade:</strong> Exclusivo para moradores e atletas de <strong>Luís Gomes/RN</strong>. Atletas de outras cidades serão removidos.</p>
+            <p><strong>🛰️ Apenas GPS:</strong> Somente atividades registradas via GPS. Treinos manuais ou esteira/ergométrica não contam.</p>
+            <p><strong>🚲 Categorias:</strong> O sistema separa automaticamente Corrida de Ciclismo baseado no tipo de atividade salva no Strava.</p>
+            <p><strong>🏁 Fair Play:</strong> Atividades em veículos (carro/moto) detectadas pelo sistema causarão a exclusão do atleta.</p>
+        </div>
+        <button class="btn-primary" onclick="toggleModal()" style="margin-top: 20px; width: 100%;">Entendi!</button>
+    </div>
+</div>
 
         <div id="loader" class="hidden">
             <div class="spinner"></div>
