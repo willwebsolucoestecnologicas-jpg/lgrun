@@ -310,3 +310,14 @@ footer { margin-top: 50px; text-align: center; border-top: var(--border); paddin
     margin-bottom: 15px; 
     color: #fff; 
 }
+
+/* Adicione isso ao seu style.css */
+
+.brand-logo {
+    height: 40px; /* Ajuste a altura conforme necessário */
+    width: auto;  /* Mantém a proporção */
+    margin-right: 10px; /* Espaço entre o logo e o texto */
+    object-fit: contain;
+}
+
+/* Se você removeu o .brand-icon (o raio), pode apagar o estilo dele do CSS */
