@@ -3,73 +3,289 @@
     --dark-bg: #1a1a1a;
     --light-bg: #f8f9fa;
     --white: #ffffff;
+    --text-gray: #666666;
+    --border-color: #eeeeee;
 }
 
 body {
-    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--light-bg);
     margin: 0;
     padding: 20px;
     display: flex;
     justify-content: center;
+    color: #333;
 }
 
+/* --- LAYOUT PRINCIPAL --- */
 .container {
     width: 100%;
     max-width: 600px;
     background: var(--white);
     padding: 30px;
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
 
-header { text-align: center; margin-bottom: 30px; }
-.strava-logo { width: 140px; }
+header { 
+    text-align: center; 
+    margin-bottom: 25px; 
+}
 
-.actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+.strava-logo { 
+    width: 120px; 
+    margin-bottom: 10px;
+}
+
+header h1 {
+    margin: 10px 0 5px 0;
+    font-size: 1.8rem;
+    color: #333;
+}
+
+header p {
+    margin: 0;
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+/* --- NOVOS CONTROLES (ABAS E FILTROS) --- */
+.filters-container {
+    margin-bottom: 25px;
+    background: #fdfdfd;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+}
+
+/* Botões Grandes (Corrida/Bike) */
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    flex: 1; /* Ocupa espaço igual */
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    font-weight: bold;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: #f0f0f0;
+    color: var(--text-gray);
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    background: #e0e0e0;
+}
+
+.tab-btn.active {
+    background: var(--strava-orange);
+    color: white;
+    box-shadow: 0 4px 12px rgba(252, 76, 2, 0.3);
+}
+
+/* Filtros Pequenos (M/F) */
+.sub-filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.chip {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: transparent;
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chip:hover {
+    border-color: var(--strava-orange);
+    color: var(--strava-orange);
+}
+
+.chip.active {
+    background: rgba(252, 76, 2, 0.1); /* Laranja bem clarinho */
+    border-color: var(--strava-orange);
+    color: var(--strava-orange);
+    font-weight: bold;
+}
+
+/* --- BOTÕES DE AÇÃO --- */
+.actions { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    margin-bottom: 30px; 
+}
 
 .btn-primary {
     background: var(--strava-orange);
     color: white;
     border: none;
-    padding: 15px;
+    padding: 16px;
     border-radius: 12px;
     font-weight: bold;
     font-size: 1.1rem;
     cursor: pointer;
+    transition: transform 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
 }
 
 .btn-secondary {
-    background: #eee;
-    color: #333;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
+    background: transparent;
+    color: var(--text-gray);
+    border: 2px solid #eee;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: bold;
     cursor: pointer;
+    transition: 0.3s;
 }
 
-table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; color: #666; }
-td { padding: 15px 12px; border-bottom: 1px solid #f0f0f0; }
+.btn-secondary:hover {
+    border-color: #ccc;
+    color: #333;
+}
 
-.col-pos { font-weight: bold; color: var(--strava-orange); }
-.col-km { text-align: right; font-weight: bold; }
+/* --- TABELA DE RANKING --- */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 10px;
+}
 
-.sponsors { margin-top: 40px; text-align: center; }
-.sponsor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+th { 
+    text-align: left; 
+    padding: 10px; 
+    border-bottom: 2px solid var(--border-color); 
+    color: #999; 
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+td { 
+    padding: 15px 10px; 
+    border-bottom: 1px solid var(--border-color); 
+    vertical-align: middle;
+}
+
+/* Estilo para #1, #2, #3 */
+.col-pos { 
+    font-weight: bold; 
+    color: var(--strava-orange); 
+    width: 30px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.col-km { 
+    text-align: right; 
+    font-weight: bold; 
+    font-size: 1.1rem;
+    color: #333;
+}
+
+/* Novo layout da célula do Atleta (Foto + Nome + Pace) */
+.col-atleta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #eee;
+}
+
+.atleta-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.nome-atleta {
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.pace-info {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 2px;
+    display: block;
+}
+
+/* --- PATROCINADORES --- */
+.sponsors { 
+    margin-top: 40px; 
+    text-align: center; 
+    border-top: 1px dashed #eee;
+    padding-top: 20px;
+}
+
+.sponsors h3 {
+    font-size: 0.9rem;
+    color: #999;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+}
+
+.sponsor-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px; 
+}
+
 .sponsor-card {
     background: #fdfdfd;
-    border: 1px dashed #ccc;
+    border: 1px solid #eee;
     padding: 15px 5px;
     border-radius: 10px;
     font-size: 0.8rem;
-    color: #888;
+    color: #aaa;
+    font-weight: bold;
 }
 
-.hidden { display: none; }
+/* --- LOADERS --- */
+.hidden { display: none !important; }
+
 .spinner {
-    width: 30px; height: 30px; border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--strava-orange);
-    border-radius: 50%; animation: spin 1s linear infinite; margin: 10px auto;
+    width: 30px; 
+    height: 30px; 
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--strava-orange);
+    border-radius: 50%; 
+    animation: spin 1s linear infinite; 
+    margin: 10px auto;
 }
+
+#loader p {
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+}
+
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Responsividade para telas muito pequenas */
+@media (max-width: 400px) {
+    .container { padding: 15px; }
+    .tabs { flex-direction: row; } 
+    .tab-btn { padding: 10px 5px; font-size: 0.8rem; }
+}
