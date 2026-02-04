@@ -224,3 +224,57 @@ footer { margin-top: 50px; text-align: center; border-top: var(--border); paddin
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .loader-line { height: 2px; width: 100%; background: linear-gradient(90deg, transparent, var(--primary), transparent); animation: loading 1.5s infinite; }
 @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* --- NOTIFICAÇÕES TOAST (Alertas Modernos) --- */
+#notification-area {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Deixa clicar através da área vazia */
+}
+
+.toast {
+    background: rgba(16, 24, 39, 0.95); /* Azul quase preto */
+    backdrop-filter: blur(10px);
+    color: #fff;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    animation: toastSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Tipos de Notificação */
+.toast.success {
+    border-left: 4px solid #28a745; /* Verde */
+}
+.toast.success .toast-icon { color: #28a745; }
+
+.toast.error {
+    border-left: 4px solid #ff4d4d; /* Vermelho */
+}
+.toast.error .toast-icon { color: #ff4d4d; }
+
+.toast-icon { font-size: 1.2rem; }
+
+@keyframes toastSlideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes toastFadeOut {
+    to { opacity: 0; transform: translateY(-20px); }
+}
