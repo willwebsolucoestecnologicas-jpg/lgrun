@@ -317,7 +317,7 @@ function exibirDesafio(desafio) {
             if (!jaInscrito) {
                 const msgZap = `Olá, quero participar do *${desafio.titulo}*!`;
                 // IMPORTANTE: Troque pelo seu número real abaixo
-                const linkZap = `https://wa.me/5584999999999?text=${encodeURIComponent(msgZap)}`;
+                const linkZap = `https://wa.me/5584996106961?text=${encodeURIComponent(msgZap)}`;
                 
                 actionArea.innerHTML = `
                     <a href="${linkZap}" target="_blank" class="btn-challenge" onclick="confirmarParticipacao('${desafio.titulo}')">
@@ -357,4 +357,5 @@ function calcularTempo(ms) {
         s: Math.floor((ms % (1000 * 60)) / 1000)
     };
 }
+
 
