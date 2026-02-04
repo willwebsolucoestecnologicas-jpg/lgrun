@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Carrega o Ranking Inicial
     carregarRanking();
+
+    // === ADICIONE ESTA LINHA ABAIXO ===
+    carregarDesafios(); 
+    // =================================
 });
 
 // --- FUNÇÕES DE LÓGICA ---
@@ -213,4 +217,68 @@ function mudarSexo(novoSexo, elemento) {
 function mostrarLoader(show) {
     if (show) loader.classList.remove('hidden');
     else loader.classList.add('hidden');
+}
+
+function toggleModal() {
+    const modal = document.getElementById('modal-regras');
+    if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
+    }
+}
+
+// Adicione no topo do script.js junto com as outras variáveis de estado
+let timerInterval;
+
+// No final da função window.onload ou DOMContentLoaded, chame:
+// carregarDesafios();
+
+async function carregarDesafios() {
+    try {
+        const response = await fetch(`${API_URL}?action=getChallenges`);
+        const desafios = await response.json();
+        
+        if (desafios && desafios.length > 0) {
+            const desafio = desafios[0]; // Pega o primeiro desafio ativo
+            exibirDesafio(desafio);
+        } else {
+            document.getElementById('challenge-container').classList.add('hidden');
+        }
+    } catch (error) {
+        console.error("Erro ao buscar desafios:", error);
+    }
+}
+
+function exibirDesafio(desafio) {
+    const container = document.getElementById('challenge-container');
+    const titulo = document.getElementById('challenge-title');
+    const info = document.getElementById('challenge-info');
+    const timer = document.getElementById('challenge-timer');
+
+    container.classList.remove('hidden');
+    titulo.innerText = desafio.titulo;
+    info.innerText = `Meta: ${desafio.kmAlvo}km | Categoria: ${desafio.tipo === 'run' ? '🏃 Corrida' : '🚴 Bike'}`;
+
+    // Inicia o Cronômetro
+    const dataFim = new Date(desafio.fim).getTime();
+    
+    if (timerInterval) clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+        const agora = new Date().getTime();
+        const distancia = dataFim - agora;
+
+        if (distancia < 0) {
+            clearInterval(timerInterval);
+            container.classList.add('hidden');
+            return;
+        }
+
+        const horas = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+        const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+        timer.innerText = `Termina em: ${horas}h ${minutos}m ${segundos}s`;
+    }, 1000);
 }
