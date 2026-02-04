@@ -99,79 +99,72 @@ async function carregarRanking() {
  * 3. Renderiza a Tabela baseada nos Filtros Atuais
  */
 function renderizarTabela() {
+    const rankingBody = document.getElementById('ranking-body');
+    const headerResult = document.getElementById('header-result');
+    
     rankingBody.innerHTML = '';
 
-    // A. Filtrar por Sexo
+    // Filtragem (igual ao anterior)
     let listaFiltrada = dadosCompletos.filter(atleta => {
         if (sexoAtual === 'all') return true;
         return atleta.sexo === sexoAtual;
     });
 
-    // B. Ordenar e Filtrar Zeros pela Categoria
     listaFiltrada = listaFiltrada.sort((a, b) => {
         if (categoriaAtual === 'run') return b.run_km - a.run_km;
         if (categoriaAtual === 'ride') return b.ride_km - a.ride_km;
         return b.total_geral - a.total_geral;
     });
 
-    // Remove quem tem 0km na categoria
     listaFiltrada = listaFiltrada.filter(item => {
         if (categoriaAtual === 'run') return item.run_km > 0;
         if (categoriaAtual === 'ride') return item.ride_km > 0;
         return item.total_geral > 0;
     });
 
-    // C. Atualiza o Cabeçalho da Tabela
+    // Atualiza Texto do Header
     if (categoriaAtual === 'run') headerResult.innerText = "Distância & Pace";
     else headerResult.innerText = "Distância Total";
 
-    // D. Feedback se lista vazia
     if (listaFiltrada.length === 0) {
-        rankingBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Nenhum atleta nesta categoria ainda.</td></tr>';
+        rankingBody.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Sem dados ainda.</div>';
         return;
     }
 
-    // E. Gera o HTML
+    // GERAÇÃO DO HTML (Novo formato Divs em vez de TR/TD)
     listaFiltrada.forEach((atleta, index) => {
         let valorPrincipal = '';
         let infoExtra = '';
 
         if (categoriaAtual === 'run') {
             valorPrincipal = `${atleta.run_km} km`;
-            // Ícone de raio para o pace
-            infoExtra = `<span class="pace-info" style="font-size:0.8rem; color:#666; display:block;">⚡ ${atleta.run_pace}/km</span>`;
+            infoExtra = `<span class="rank-pace">⚡ ${atleta.run_pace}/km</span>`;
         } else if (categoriaAtual === 'ride') {
             valorPrincipal = `${atleta.ride_km} km`;
+            infoExtra = `<span class="rank-pace">Bike</span>`;
         } else {
             valorPrincipal = `${atleta.total_geral} km`;
-            infoExtra = `<span style="font-size:0.8rem; color:#666; display:block;">Acumulado</span>`;
+            infoExtra = `<span class="rank-pace">Acumulado</span>`;
         }
 
-        // Avatar Padrão se vier vazio
         let avatarUrl = atleta.avatar ? atleta.avatar : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
-        // Ícones de Medalha
-        let medalha = '';
-        if (index === 0) medalha = '🥇 ';
-        if (index === 1) medalha = '🥈 ';
-        if (index === 2) medalha = '🥉 ';
-
-        const linha = `
-            <tr>
-                <td class="col-pos"><strong>${index + 1}</strong></td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${avatarUrl}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
-                        <div>
-                            <strong>${medalha}${atleta.atleta}</strong>
-                            ${infoExtra}
-                        </div>
+        const itemHTML = `
+            <div class="rank-item">
+                <div class="rank-left">
+                    <span class="rank-pos">${index + 1}</span>
+                    <img src="${avatarUrl}" class="rank-avatar">
+                    <div class="rank-info">
+                        <span class="rank-name">${atleta.atleta}</span>
+                        ${infoExtra}
                     </div>
-                </td>
-                <td class="col-km"><strong>${valorPrincipal}</strong></td>
-            </tr>
+                </div>
+                <div class="rank-right">
+                    <span class="rank-value">${valorPrincipal}</span>
+                </div>
+            </div>
         `;
-        rankingBody.innerHTML += linha;
+        rankingBody.innerHTML += itemHTML;
     });
 }
 
@@ -257,6 +250,7 @@ function exibirDesafio(desafio) {
     const timer = document.getElementById('challenge-timer');
     const badge = document.querySelector('.challenge-badge');
     const card = document.querySelector('.challenge-card');
+    const actionArea = document.getElementById('challenge-action'); // Área do botão
 
     container.classList.remove('hidden');
     titulo.innerText = desafio.titulo;
@@ -267,32 +261,74 @@ function exibirDesafio(desafio) {
     timerInterval = setInterval(() => {
         const agora = new Date().getTime();
         
-        // CENÁRIO A: Ainda não começou
+        // Lógica do Botão: Desaparece 10 minutos antes do fim
+        const dezMinutosEmMs = 10 * 60 * 1000;
+        const limiteInscricao = desafio.fimMs - dezMinutosEmMs;
+        const jaInscrito = localStorage.getItem(`desafio_${desafio.titulo}`); // Verifica se já clicou
+
+        // Renderiza o botão ou o aviso
+        if (agora < limiteInscricao) {
+            if (jaInscrito) {
+                actionArea.innerHTML = '<span class="challenge-closed" style="border-color:#fff; color:#fff;">✅ VOCÊ ESTÁ PARTICIPANDO</span>';
+            } else {
+                // Insira AQUI o seu número de WhatsApp para receber a inscrição
+                const msgZap = `Olá, quero confirmar minha participação no *${desafio.titulo}*!`;
+                const linkZap = `https://wa.me/5584996106961?text=${encodeURIComponent(msgZap)}`;
+                
+                actionArea.innerHTML = `
+                    <button class="btn-challenge" onclick="confirmarParticipacao('${desafio.titulo}', '${linkZap}')">
+                        🙋‍♂️ QUERO PARTICIPAR
+                    </button>
+                `;
+            }
+        } else if (agora >= limiteInscricao && agora <= desafio.fimMs) {
+            actionArea.innerHTML = '<div class="challenge-closed">⛔ INSCRIÇÕES ENCERRADAS</div>';
+        } else {
+            actionArea.innerHTML = ''; // Limpa se acabou
+        }
+
+        // --- LÓGICA DO TIMER (MANTIDA) ---
         if (agora < desafio.inicioMs) {
             const dist = desafio.inicioMs - agora;
             const t = calcularTempo(dist);
-            
             badge.innerText = "🔜 EM BREVE";
             badge.style.background = "rgba(255,255,255,0.2)";
             card.style.background = "linear-gradient(135deg, #555 0%, #222 100%)";
-            timer.innerHTML = `<span style="font-size:0.8rem; opacity:0.8;">COMEÇA EM:</span><br>${t.h}h ${t.m}m ${t.s}s`;
+            timer.innerHTML = `<span style="font-size:0.8rem; opacity:0.8;">ABRE EM:</span><br>${t.h}h ${t.m}m ${t.s}s`;
         } 
-        // CENÁRIO B: Está acontecendo
         else if (agora >= desafio.inicioMs && agora <= desafio.fimMs) {
             const dist = desafio.fimMs - agora;
             const t = calcularTempo(dist);
-
             badge.innerText = "🔥 DESAFIO ATIVO";
             badge.style.background = "rgba(0,0,0,0.2)";
             card.style.background = "linear-gradient(135deg, #fc4c02 0%, #ff8c00 100%)";
             timer.innerHTML = `<span style="font-size:0.8rem; opacity:0.8;">TERMINA EM:</span><br>${t.h}h ${t.m}m ${t.s}s`;
         }
-        // CENÁRIO C: Expirou
         else {
             clearInterval(timerInterval);
             container.classList.add('hidden');
         }
     }, 1000);
+}
+
+// Nova função para salvar que a pessoa clicou (Simula inscrição)
+function confirmarParticipacao(tituloDesafio, linkWhatsApp) {
+    // Salva no navegador da pessoa que ela clicou
+    localStorage.setItem(`desafio_${tituloDesafio}`, 'true');
+    
+    // Redireciona para o WhatsApp do Admin (Você)
+    window.open(linkWhatsApp, '_blank');
+    
+    // Atualiza a tela na hora para sumir o botão
+    exibirDesafio(dadosCompletos.find(d => d.titulo === tituloDesafio) || {}); 
+}
+
+function calcularTempo(ms) {
+    return {
+        h: Math.floor(ms / (1000 * 60 * 60)),
+        m: Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60)),
+        s: Math.floor((ms % (1000 * 60)) / 1000)
+    };
 }
 
 // Função auxiliar para não repetir código de cálculo
