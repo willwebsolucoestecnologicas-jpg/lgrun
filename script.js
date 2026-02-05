@@ -1,39 +1,4 @@
 // =================================================================
-// 📲 PWA INSTALLER LOGIC
-// =================================================================
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  // 1. Impede o Chrome de tentar mostrar o aviso automático (que as vezes falha)
-  e.preventDefault();
-  // 2. Guarda o evento para usarmos no botão
-  deferredPrompt = e;
-  // 3. Mostra o nosso botão de instalar na tela de login
-  const installBtn = document.getElementById('btn-install-app');
-  if (installBtn) {
-      installBtn.classList.remove('hidden');
-      installBtn.style.display = 'block'; // Garante que apareça
-      showToast('Aplicativo pronto para instalar!', 'success'); // Avisa o usuário
-  }
-});
-
-async function instalarPWA() {
-  if (deferredPrompt) {
-    // Mostra o prompt oficial de instalação
-    deferredPrompt.prompt();
-    // Espera o usuário aceitar ou recusar
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      deferredPrompt = null;
-      // Esconde o botão depois de instalado
-      document.getElementById('btn-install-app').style.display = 'none';
-    }
-  }
-}
-
-// ... (Aqui continua o resto do seu código: CONFIGURAÇÕES, API_URL, etc)
-
-// =================================================================
 // ⚙️ CONFIGURAÇÕES
 // =================================================================
 const API_URL = "https://script.google.com/macros/s/AKfycbyrEhqu0mSebN0ot74wk1CHEMrSRjmTyTHjqsdx1a6Sk80sqfZ_M14SpjStRDCRFl_92w/exec";
@@ -398,4 +363,5 @@ function toggleModal() {
     if (modal.classList.contains('hidden')) modal.classList.remove('hidden');
     else modal.classList.add('hidden');
 }
+
 
