@@ -1,237 +1,185 @@
 // =================================================================
-// ⚙️ CONFIGURAÇÕES DO PROJETO
+// ⚙️ CONFIGURAÇÕES
 // =================================================================
-
-// SEU LINK DO GOOGLE APPS SCRIPT (JÁ CONFIGURADO)
 const API_URL = "https://script.google.com/macros/s/AKfycbyrEhqu0mSebN0ot74wk1CHEMrSRjmTyTHjqsdx1a6Sk80sqfZ_M14SpjStRDCRFl_92w/exec";
-
-// SEUS DADOS DO STRAVA
-const CLIENT_ID = "198835"; 
-// Importante: A URL abaixo deve ser EXATAMENTE onde seu site está hospedado
+const STRAVA_CLIENT_ID = "198835"; 
 const GITHUB_URL = "https://willwebsolucoestecnologicas-jpg.github.io/lgrun/"; 
+const AUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${GITHUB_URL}&approval_prompt=force&scope=read,activity:read_all`;
 
-// Link de autorização (Montado automaticamente)
-const AUTH_URL = `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${GITHUB_URL}&approval_prompt=force&scope=read,activity:read_all`;
+// ✅ SEU ID DO GOOGLE CLOUD (JÁ INSERIDO)
+const GOOGLE_CLIENT_ID = "619502802732-6lbbvjd0pm9ocg0keubds0aajk6s81ut.apps.googleusercontent.com"; 
 
 // =================================================================
-// 🧠 ESTADO DA APLICAÇÃO (MEMÓRIA)
+// 🧠 ESTADO
 // =================================================================
 let dadosCompletos = [];
-let categoriaAtual = 'run'; // 'run', 'ride', 'geral'
-let sexoAtual = 'all';      // 'all', 'M', 'F'
-let timerInterval;          // Controle do cronômetro
+let categoriaAtual = 'run';
+let sexoAtual = 'all';
+let globalTimerInterval;
 
 // =================================================================
-// 🚀 INICIALIZAÇÃO (QUANDO A PÁGINA CARREGA)
+// 🚀 INICIALIZAÇÃO
 // =================================================================
-document.addEventListener('DOMContentLoaded', () => {
+window.onload = () => {
+    // 1. Verifica se já tem login do Google salvo
+    const googleUser = localStorage.getItem('lg_google_user');
     
-    // 1. Configura o botão de Login (Entrar no Desafio)
+    if (googleUser) {
+        // Se já logou, libera o app direto
+        liberarAcessoApp(JSON.parse(googleUser));
+    } else {
+        // Se não, mostra o botão do Google na tela de bloqueio
+        inicializarGoogleBtn();
+    }
+
+    // Configura botões internos
     const btnParticipar = document.getElementById('btn-participar');
-    if (btnParticipar) {
-        btnParticipar.onclick = () => {
-            // Redireciona para o Strava
-            window.location.href = AUTH_URL;
-        };
-    }
-
-    // 2. Configura o botão de Sync
+    if(btnParticipar) btnParticipar.onclick = () => window.location.href = AUTH_URL;
+    
     const btnSync = document.getElementById('btn-sync');
-    if (btnSync) {
-        btnSync.onclick = sincronizarDados;
-    }
+    if(btnSync) btnSync.onclick = sincronizarDados;
+};
 
-    // 3. Verifica se voltou do Strava com código de login
+// =================================================================
+// 🔐 LÓGICA DE LOGIN GOOGLE
+// =================================================================
+function inicializarGoogleBtn() {
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleCredentialResponse
+    });
+    
+    google.accounts.id.renderButton(
+        document.getElementById("buttonDiv"),
+        { theme: "filled_blue", size: "large", shape: "pill", width: "280" } 
+    );
+}
+
+function handleCredentialResponse(response) {
+    const data = parseJwt(response.credential);
+    
+    const usuario = {
+        nome: data.name,
+        email: data.email,
+        foto: data.picture
+    };
+
+    localStorage.setItem('lg_google_user', JSON.stringify(usuario));
+    liberarAcessoApp(usuario);
+    showToast(`Bem-vindo, ${usuario.nome}!`, 'success');
+}
+
+function liberarAcessoApp(usuario) {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('app-content').classList.remove('hidden-app');
+    
+    if(usuario.foto) document.getElementById('user-photo').src = usuario.foto;
+
+    // Carrega o sistema
     processarRetornoStrava();
-
-    // 4. Carrega os dados iniciais
     carregarRanking();
     carregarDesafios();
-});
+}
+
+function fazerLogout() {
+    if(confirm("Deseja sair do aplicativo?")) {
+        localStorage.removeItem('lg_google_user');
+        location.reload(); 
+    }
+}
+
+function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+}
 
 // =================================================================
-// 🔗 FUNÇÕES DE CONEXÃO (API)
+// 🔗 API E DADOS
 // =================================================================
-
-// A. Processa o retorno do Login do Strava
-// A. Processa o retorno do Login do Strava (ATUALIZADA)
 async function processarRetornoStrava() {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-
     if (code) {
-        mostrarLoader(true);
-        // Remove o código da URL na hora para ficar limpo
         window.history.replaceState({}, document.title, window.location.pathname);
-
+        showToast("Conectando ao Strava...", 'success');
+        
         try {
             const response = await fetch(`${API_URL}?code=${code}`);
             const result = await response.json();
-            
             if (result.success) {
-                // USA A NOVA NOTIFICAÇÃO
-                showToast(`Bem-vindo, ${result.atleta}! Cadastro realizado.`, 'success');
+                showToast(`Conta Strava conectada: ${result.atleta}!`, 'success');
                 carregarRanking();
             } else {
-                console.error("Erro Strava:", result);
-                showToast("Erro ao cadastrar. Tente novamente.", 'error');
+                showToast("Erro ao conectar Strava.", 'error');
             }
         } catch (error) {
-            console.error("Erro de conexão:", error);
-            showToast("Erro de conexão. Verifique sua internet.", 'error');
-        } finally {
-            mostrarLoader(false);
+            showToast("Erro de conexão.", 'error');
         }
     }
 }
-// B. Busca o Ranking
+
 async function carregarRanking() {
-    mostrarLoader(true);
     const rankingBody = document.getElementById('ranking-body');
-    rankingBody.innerHTML = ''; 
+    const loader = document.getElementById('loader');
+    rankingBody.innerHTML = '';
+    if(loader) loader.classList.remove('hidden');
 
     try {
         const response = await fetch(`${API_URL}?action=getRanking`);
         const data = await response.json();
-        
-        dadosCompletos = data; // Salva na memória
-        renderizarTabela();    // Desenha na tela
+        dadosCompletos = data;
+        renderizarTabela();
     } catch (error) {
-        console.error("Erro ao carregar ranking:", error);
-        rankingBody.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Erro ao carregar dados.</div>';
+        console.error("Erro ranking:", error);
     } finally {
-        mostrarLoader(false);
+        if(loader) loader.classList.add('hidden');
     }
 }
 
-// C. Sincronização Manual
-// C. Sincronização Manual (ATUALIZADA)
 async function sincronizarDados() {
-    mostrarLoader(true);
+    showToast("Sincronizando...", 'success');
     try {
         const res = await fetch(`${API_URL}?action=syncAll`);
         const result = await res.json();
-        showToast(`Sync concluído! +${result.novasAtividades} atividades.`, 'success');
+        showToast(`Sync ok! +${result.novasAtividades} atividades.`, 'success');
         carregarRanking();
     } catch (e) {
-        showToast("Erro ao sincronizar.", 'error');
-    } finally {
-        mostrarLoader(false);
+        showToast("Erro no Sync.", 'error');
     }
 }
-// D. Busca Desafios Ativos
 
 // =================================================================
-// 🎨 FUNÇÕES DE INTERFACE (UI)
+// 🔥 MULTI-DESAFIOS
 // =================================================================
-
-function renderizarTabela() {
-    const rankingBody = document.getElementById('ranking-body');
-    const headerResult = document.getElementById('header-result');
-    rankingBody.innerHTML = '';
-
-    // Filtragem
-    let listaFiltrada = dadosCompletos.filter(atleta => {
-        if (sexoAtual === 'all') return true;
-        return atleta.sexo === sexoAtual;
-    });
-
-    // Ordenação
-    listaFiltrada = listaFiltrada.sort((a, b) => {
-        if (categoriaAtual === 'run') return b.run_km - a.run_km;
-        if (categoriaAtual === 'ride') return b.ride_km - a.ride_km;
-        return b.total_geral - a.total_geral;
-    });
-
-    // Remove zeros
-    listaFiltrada = listaFiltrada.filter(item => {
-        if (categoriaAtual === 'run') return item.run_km > 0;
-        if (categoriaAtual === 'ride') return item.ride_km > 0;
-        return item.total_geral > 0;
-    });
-
-    // Atualiza Header
-    if (categoriaAtual === 'run') headerResult.innerText = "Distância & Pace";
-    else headerResult.innerText = "Distância Total";
-
-    if (listaFiltrada.length === 0) {
-        rankingBody.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Sem dados nesta categoria.</div>';
-        return;
-    }
-
-    // Gera HTML
-    listaFiltrada.forEach((atleta, index) => {
-        let valorPrincipal = '';
-        let infoExtra = '';
-
-        if (categoriaAtual === 'run') {
-            valorPrincipal = `${atleta.run_km} km`;
-            infoExtra = `<span class="rank-pace">⚡ ${atleta.run_pace}/km</span>`;
-        } else if (categoriaAtual === 'ride') {
-            valorPrincipal = `${atleta.ride_km} km`;
-            infoExtra = `<span class="rank-pace">Bike</span>`;
-        } else {
-            valorPrincipal = `${atleta.total_geral} km`;
-            infoExtra = `<span class="rank-pace">Acumulado</span>`;
-        }
-
-        let avatarUrl = atleta.avatar ? atleta.avatar : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-
-        const itemHTML = `
-            <div class="rank-item">
-                <div class="rank-left">
-                    <span class="rank-pos">${index + 1}</span>
-                    <img src="${avatarUrl}" class="rank-avatar">
-                    <div class="rank-info">
-                        <span class="rank-name">${atleta.atleta}</span>
-                        ${infoExtra}
-                    </div>
-                </div>
-                <div class="rank-right">
-                    <span class="rank-value">${valorPrincipal}</span>
-                </div>
-            </div>
-        `;
-        rankingBody.innerHTML += itemHTML;
-    });
-}
-
-// Variável global para controlar os timers
-let globalTimerInterval;
-
-// 1. Busca e Renderiza TODOS os desafios
 async function carregarDesafios() {
     try {
         const response = await fetch(`${API_URL}?action=getChallenges`);
         const desafios = await response.json();
         
         const container = document.getElementById('challenge-container');
-        container.innerHTML = ''; // Limpa antes de adicionar
+        container.innerHTML = ''; 
 
         if (desafios && desafios.length > 0) {
             container.classList.remove('hidden');
-            
-            // Cria um card para CADA desafio encontrado
             desafios.forEach((desafio, index) => {
                 const cardHTML = criarHTMLCard(desafio, index);
                 container.innerHTML += cardHTML;
             });
-
-            // Inicia o cronômetro que atualiza todos os cards
             iniciarCronometroGlobal(desafios);
         } else {
             container.classList.add('hidden');
         }
     } catch (error) {
-        console.error("Erro ao buscar desafios:", error);
+        console.error("Erro desafios:", error);
     }
 }
 
-// 2. Cria o HTML de um card individual (Layout Pro)
 function criarHTMLCard(desafio, index) {
     const jaInscrito = localStorage.getItem(`desafio_${desafio.titulo}`);
-    
-    // Define o estado inicial do botão
     let botaoHTML = '';
     const msgZap = `Olá, quero participar do *${desafio.titulo}*!`;
     const linkZap = `https://wa.me/5584996417551?text=${encodeURIComponent(msgZap)}`;
@@ -239,7 +187,6 @@ function criarHTMLCard(desafio, index) {
     if (jaInscrito) {
         botaoHTML = `<div class="challenge-closed" style="border-color:#fff;">✅ INSCRITO</div>`;
     } else {
-        // Adicionamos um ID único ao botão para sumir com ele depois
         botaoHTML = `
             <a href="${linkZap}" target="_blank" class="btn-challenge" 
                id="btn-action-${index}"
@@ -249,7 +196,6 @@ function criarHTMLCard(desafio, index) {
         `;
     }
 
-    // IDs únicos para o timer e status deste card específico
     return `
         <div class="hero-card" id="card-${index}">
             <div class="hero-glow"></div>
@@ -275,7 +221,6 @@ function criarHTMLCard(desafio, index) {
     `;
 }
 
-// 3. Controla o tempo de TODOS os desafios simultaneamente
 function iniciarCronometroGlobal(desafios) {
     if (globalTimerInterval) clearInterval(globalTimerInterval);
 
@@ -288,38 +233,51 @@ function iniciarCronometroGlobal(desafios) {
             const actionArea = document.getElementById(`action-area-${index}`);
             const cardElement = document.getElementById(`card-${index}`);
 
-            if (!timerElement) return; // Segurança
+            if (!timerElement) return;
 
             const inicio = Number(desafio.inicioMs);
             const fim = Number(desafio.fimMs);
             let distancia = 0;
 
-            // Lógica de Status
             if (agora < inicio) {
                 distancia = inicio - agora;
                 statusElement.innerText = "EM BREVE";
-                statusElement.style.background = "#0066ff"; // Azul
+                statusElement.style.background = "#0066ff"; 
             } else if (agora >= inicio && agora <= fim) {
                 distancia = fim - agora;
                 statusElement.innerText = "AO VIVO";
-                statusElement.style.background = "#28a745"; // Verde
+                statusElement.style.background = "#28a745"; 
             } else {
-                // Se acabou, remove o card da tela
                 if (cardElement) cardElement.style.display = 'none';
                 return;
             }
 
-            // Atualiza o relógio
             const t = calcularTempo(distancia);
             timerElement.innerText = `${t.h}h ${t.m}m ${t.s}s`;
 
-            // Lógica de Inscrição (10 min antes do fim)
             const limiteInscricao = fim - (10 * 60 * 1000);
             if (agora >= limiteInscricao && agora <= fim) {
                 actionArea.innerHTML = '<div class="challenge-closed">⛔ ENCERRADO</div>';
             }
         });
     }, 1000);
+}
+
+// =================================================================
+// 🎨 UI HELPERS
+// =================================================================
+function showToast(mensagem, tipo = 'success') {
+    const area = document.getElementById('notification-area');
+    if(!area) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo}`;
+    const icon = tipo === 'success' ? '✅' : '❌';
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${mensagem}</span>`;
+    area.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = "toastFadeOut 0.5s forwards";
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
 }
 
 function calcularTempo(ms) {
@@ -349,10 +307,55 @@ function mudarSexo(novoSexo, elemento) {
     renderizarTabela();
 }
 
-function mostrarLoader(show) {
-    const loader = document.getElementById('loader');
-    if (show) loader.classList.remove('hidden');
-    else loader.classList.add('hidden');
+function renderizarTabela() {
+    const rankingBody = document.getElementById('ranking-body');
+    const headerResult = document.getElementById('header-result');
+    rankingBody.innerHTML = '';
+
+    let listaFiltrada = dadosCompletos.filter(atleta => sexoAtual === 'all' || atleta.sexo === sexoAtual);
+
+    listaFiltrada = listaFiltrada.sort((a, b) => {
+        if (categoriaAtual === 'run') return b.run_km - a.run_km;
+        if (categoriaAtual === 'ride') return b.ride_km - a.ride_km;
+        return b.total_geral - a.total_geral;
+    });
+
+    listaFiltrada = listaFiltrada.filter(item => {
+        if (categoriaAtual === 'run') return item.run_km > 0;
+        if (categoriaAtual === 'ride') return item.ride_km > 0;
+        return item.total_geral > 0;
+    });
+
+    if (categoriaAtual === 'run') headerResult.innerText = "Distância & Pace";
+    else headerResult.innerText = "Distância Total";
+
+    if (listaFiltrada.length === 0) {
+        rankingBody.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Sem dados.</div>';
+        return;
+    }
+
+    listaFiltrada.forEach((atleta, index) => {
+        let valorPrincipal = categoriaAtual === 'run' ? `${atleta.run_km} km` : (categoriaAtual === 'ride' ? `${atleta.ride_km} km` : `${atleta.total_geral} km`);
+        let infoExtra = categoriaAtual === 'run' ? `⚡ ${atleta.run_pace}/km` : (categoriaAtual === 'ride' ? `Bike` : `Acumulado`);
+        let avatarUrl = atleta.avatar ? atleta.avatar : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+        const itemHTML = `
+            <div class="rank-item">
+                <div class="rank-left">
+                    <span class="rank-pos" style="${index===0?'color:#FFD700; text-shadow:0 0 10px rgba(255,215,0,0.4)':(index===1?'color:#C0C0C0':(index===2?'color:#CD7F32':''))}">${index + 1}</span>
+                    <img src="${avatarUrl}" class="rank-avatar">
+                    <div class="rank-info">
+                        <span class="rank-name">${atleta.atleta}</span>
+                        <span class="rank-pace" style="color:#8b9bb4; font-size:0.75rem">${infoExtra}</span>
+                    </div>
+                </div>
+                <div class="rank-right">
+                    <span class="rank-value">${valorPrincipal}</span>
+                </div>
+            </div>
+        `;
+        rankingBody.innerHTML += itemHTML;
+    });
 }
 
 function toggleModal() {
@@ -360,31 +363,3 @@ function toggleModal() {
     if (modal.classList.contains('hidden')) modal.classList.remove('hidden');
     else modal.classList.add('hidden');
 }
-
-// Função para mostrar notificação bonita
-function showToast(mensagem, tipo = 'success') {
-    const area = document.getElementById('notification-area');
-    
-    // Cria o elemento da notificação
-    const toast = document.createElement('div');
-    toast.className = `toast ${tipo}`;
-    
-    // Ícone baseado no tipo
-    const icon = tipo === 'success' ? '✅' : '❌';
-    
-    toast.innerHTML = `
-        <span class="toast-icon">${icon}</span>
-        <span>${mensagem}</span>
-    `;
-    
-    // Adiciona na tela
-    area.appendChild(toast);
-    
-    // Remove automaticamente depois de 4 segundos
-    setTimeout(() => {
-        toast.style.animation = "toastFadeOut 0.5s forwards";
-        setTimeout(() => toast.remove(), 500); // Espera a animação acabar
-    }, 4000);
-}
-
-
