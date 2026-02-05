@@ -8,25 +8,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 
-    <meta property="og:title" content="LG Sprint | Ranking Oficial">
-    <meta property="og:description" content="Performance e Tecnologia. Acompanhe o ranking.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 </head>
 <body>
-    <div id="notification-area"></div>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-    <div class="app-container">
+    <div id="login-overlay" class="login-wrapper">
+        <div class="login-card">
+            <div class="login-logo">⚡</div>
+            <h2>Bem-vindo ao LG Sprint</h2>
+            <p>Faça login com sua conta Google para acessar o sistema exclusivo de Luís Gomes.</p>
+            
+            <div id="buttonDiv" class="google-btn-container"></div>
+            
+            <p class="login-footer">Powered by WillWeb Soluções</p>
+        </div>
+    </div>
+
+    <div id="app-content" class="app-container hidden-app">
         
         <nav class="navbar">
             <div class="brand">
-                <img src="logosprint.jpg" alt="Logo LG Sprint" class="brand-logo">
-                
+                <span class="brand-icon">⚡</span>
                 <div class="brand-text">
                     <h1>LG SPRINT</h1>
                     <span class="pro-badge">PRO</span>
                 </div>
             </div>
-            <div class="status-indicator">
-                <span class="dot online"></span> Live
+            
+            <div class="user-profile" onclick="fazerLogout()">
+                <img id="user-photo" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="User">
+                <div class="status-indicator" style="border:none; padding:0; background:transparent;">
+                    <span class="dot online"></span>
+                </div>
             </div>
         </nav>
 
@@ -45,12 +59,14 @@
         </div>
 
         <main>
+            <div id="notification-area"></div>
+
             <div id="challenge-container" class="challenge-wrapper hidden">
-    </div>
+                </div>
 
             <div class="grid-actions">
                 <button id="btn-participar" class="btn-action primary">
-                    <span class="icon">🚀</span> Entrar no Desafio
+                    <span class="icon">🚀</span> Conectar Strava
                 </button>
                 <button id="btn-sync" class="btn-action glass">
                     <span class="icon">↻</span> Sync
@@ -63,8 +79,7 @@
                     <span class="header-result" id="header-result">Distância</span>
                 </div>
                 
-                <div class="ranking-list" id="ranking-body">
-                    </div>
+                <div class="ranking-list" id="ranking-body"></div>
                 
                 <div id="loader" class="hidden">
                     <div class="loader-line"></div>
@@ -97,10 +112,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
