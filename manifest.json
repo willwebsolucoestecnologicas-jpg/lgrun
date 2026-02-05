@@ -10,12 +10,12 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/5906/5906032.png",
       "sizes": "192x192",
-      "type": "image/jpg"
+      "type": "image/png"
     },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/5906/5906032.png",
       "sizes": "512x512",
-      "type": "image/jpg"
+      "type": "image/png"
     }
   ]
 }
