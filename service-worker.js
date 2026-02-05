@@ -1,11 +1,14 @@
-const CACHE_NAME = 'lgsprint-v1';
+const CACHE_NAME = 'lgsprint-v2'; // Mudei de v1 para v2 para forçar atualização
 const urlsToCache = [
   './',
   './index.html',
   './style.css',
   './script.js',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
+// ... (o resto continua igual)
 
 // Instalação do Service Worker
 self.addEventListener('install', (event) => {
