@@ -182,7 +182,7 @@ function criarHTMLCard(desafio, index) {
     const jaInscrito = localStorage.getItem(`desafio_${desafio.titulo}`);
     let botaoHTML = '';
     const msgZap = `Olá, quero participar do *${desafio.titulo}*!`;
-    const linkZap = `https://wa.me/5584996417551?text=${encodeURIComponent(msgZap)}`;
+    const linkZap = `https://wa.me/5584996106961?text=${encodeURIComponent(msgZap)}`;
 
     if (jaInscrito) {
         botaoHTML = `<div class="challenge-closed" style="border-color:#fff;">✅ INSCRITO</div>`;
